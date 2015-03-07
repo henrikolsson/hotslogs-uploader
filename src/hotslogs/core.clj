@@ -14,13 +14,21 @@
 (def work (ConcurrentHashMap.))
 (def watcher (atom nil))
 
+(defn stop []
+  (log/info "Stopping...")
+  (@watcher))
+
 (defn upload-replay [path]
   (let [filename (str (UUID/randomUUID) ".StormReplay")
         file (File. path)]
     (log/info (str "Uploading " (.getName file) "..."))
     (let [putres (s3/put-object cred "heroesreplays" filename file)
           result (:body @(http/get (str "https://www.hotslogs.com/UploadFile.aspx?FileName=" filename)))]
-      (log/info (str "Uploaded " (.getName file) ": " result)))))
+      (log/info (str "Uploaded " (.getName file) ": " result))
+      (if (= result "Maintenance")
+        (do (log/info "Maintenance activated, shutting down")
+            (stop)))
+      result)))
 
 (defn event-handler [event filename]
   (try
@@ -42,10 +50,6 @@
           (start-watch [{:path directory
                          :event-types [:modify :create :delete]
                          :callback #'event-handler}])))
-(defn stop []
-  (log/info "Stopping")
-  (@watcher))
-
 (defn -main [& args]
   (let [directory (first args)]
     (if (not directory)
