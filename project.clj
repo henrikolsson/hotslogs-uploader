@@ -1,4 +1,4 @@
-(defproject hotslogs-uploader "0.0.1"
+(defproject hotslogs-uploader "0.0.2-SNAPSHOT"
   :description "Replay uploader for hotslogs.com"
   :url "https://github.com/henrikolsson/hotslogs-uploader"
   :license {:name "Eclipse Public License"
